@@ -33,7 +33,8 @@ export const sendFacebookMessageMedia = async ({
   try {
     const type = typeAttachment(media);
 
-    const domain = `${process.env.BACKEND_URL}/public/${media.filename}`
+    const domain = `${process.env.BACKEND_URL}/public/company${ticket.companyId}/${media.filename}`
+
 
     const sendMessage = await sendAttachmentFromUrl(
       ticket.contact.number,

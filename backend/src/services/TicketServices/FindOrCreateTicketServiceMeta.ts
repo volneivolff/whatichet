@@ -22,7 +22,7 @@ const FindOrCreateTicketServiceMeta = async (
   let ticket = await Ticket.findOne({
     where: {
       status: {
-        [Op.or]: ["open", "pending"]
+        [Op.or]: ["open", "pending", "closed"]
       },
       contactId: contact.id,
       companyId,
@@ -56,14 +56,13 @@ const FindOrCreateTicketServiceMeta = async (
         ticketId: ticket.id,
         companyId,
         whatsappId: ticket.whatsappId,
-        userId: ticket.userId,
-        channel
+        userId: ticket.userId
       });
     }
     const msgIsGroupBlock = await Setting.findOne({
       where: { key: "timeCreateNewTicket" }
     });
-  
+
     const value = msgIsGroupBlock ? parseInt(msgIsGroupBlock.value, 10) : 7200;
   }
 
@@ -90,31 +89,30 @@ const FindOrCreateTicketServiceMeta = async (
         ticketId: ticket.id,
         companyId,
         whatsappId: ticket.whatsappId,
-        userId: ticket.userId,
-        channel
+        userId: ticket.userId
       });
     }
   }
 
   if (!ticket) {
     ticket = await Ticket.create({
-      contactId:contact.id,
+      contactId: contact.id,
       status: "pending",
       isGroup: false,
       unreadMessages,
       whatsappId,
       companyId,
-      channel
+      channel,
+      isActiveDemand: false
     });
 
     await FindOrCreateATicketTrakingService({
       ticketId: ticket.id,
       companyId,
       whatsappId,
-      userId: ticket.userId,
-      channel
+      userId: ticket.userId
     });
-    
+
   } else {
     await ticket.update({ whatsappId });
   }

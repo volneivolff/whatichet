@@ -31,7 +31,7 @@ const useStyles = makeStyles((theme) => ({
     overflowY: "auto",
     height: "100%",
     ...theme.scrollbarStyles,
-    backgroundColor: "#eee",
+    backgroundColor: theme.mode === 'light' ? "#f2f2f2" : "#7f7f7f",
   },
   inputArea: {
     position: "relative",
@@ -47,7 +47,8 @@ const useStyles = makeStyles((theme) => ({
     padding: "10px 10px 5px",
     margin: "10px",
     position: "relative",
-    backgroundColor: "white",
+    backgroundColor: "#ffffff",
+    color: "#303030",
     maxWidth: 300,
     borderRadius: 10,
     borderBottomLeftRadius: 0,
@@ -57,7 +58,8 @@ const useStyles = makeStyles((theme) => ({
     padding: "10px 10px 5px",
     margin: "10px 10px 10px auto",
     position: "relative",
-    backgroundColor: "#E3F3F9",
+    backgroundColor: "#dcf8c6",
+    color: "#303030",
     textAlign: "right",
     maxWidth: 300,
     borderRadius: 10,
@@ -76,7 +78,7 @@ export default function ChatMessages({
   loading,
 }) {
   const classes = useStyles();
-  const { user } = useContext(AuthContext);
+  const { user, socket } = useContext(AuthContext);
   const { datetimeToClient } = useDate();
   const baseRef = useRef();
 

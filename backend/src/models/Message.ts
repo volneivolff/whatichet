@@ -14,12 +14,13 @@ import Contact from "./Contact";
 import Ticket from "./Ticket";
 import Company from "./Company";
 import Queue from "./Queue";
+import TicketTraking from "./TicketTraking";
 
 @Table
 class Message extends Model<Message> {
   @PrimaryKey
   @Column
-  id: string;
+  id: number;
 
   @Column(DataType.STRING)
   remoteJid: string;
@@ -42,18 +43,15 @@ class Message extends Model<Message> {
   @Column
   fromMe: boolean;
 
-  @Column({ defaultValue: "whatsapp" })
-  channel: string;
-
   @Column(DataType.TEXT)
   body: string;
 
   @Column(DataType.STRING)
   get mediaUrl(): string | null {
     if (this.getDataValue("mediaUrl")) {
-      return `${process.env.BACKEND_URL}/public/${this.getDataValue(
-        "mediaUrl"
-      )}`;
+      
+      return `${process.env.BACKEND_URL}${process.env.PROXY_PORT ?`:${process.env.PROXY_PORT}`:""}/public/company${this.companyId}/${this.getDataValue("mediaUrl")}`;
+
     }
     return null;
   }
@@ -65,7 +63,6 @@ class Message extends Model<Message> {
   @Column
   isDeleted: boolean;
 
-  @CreatedAt
   @Column(DataType.DATE(6))
   createdAt: Date;
 
@@ -87,6 +84,13 @@ class Message extends Model<Message> {
   @BelongsTo(() => Ticket)
   ticket: Ticket;
 
+  @ForeignKey(() => TicketTraking)
+  @Column
+  ticketTrakingId: number;
+
+  @BelongsTo(() => TicketTraking, "ticketTrakingId")
+  ticketTraking: TicketTraking;
+
   @ForeignKey(() => Contact)
   @Column
   contactId: number;
@@ -107,6 +111,21 @@ class Message extends Model<Message> {
 
   @BelongsTo(() => Queue)
   queue: Queue;
+  
+  @Column
+  wid: string;
+
+  @Default(false)
+  @Column
+  isPrivate: boolean;
+
+  @Default(false)
+  @Column
+  isEdited: boolean;
+
+  @Default(false)
+  @Column
+  isForwarded: boolean;
 }
 
 export default Message;

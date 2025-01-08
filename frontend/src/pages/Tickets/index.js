@@ -4,8 +4,8 @@ import Grid from "@material-ui/core/Grid";
 import Paper from "@material-ui/core/Paper";
 import { makeStyles } from "@material-ui/core/styles";
 
-import TicketsManager from "../../components/TicketsManager/";
-import Ticket from "../../components/Ticket/";
+import TicketsManager from "../../components/TicketsManager";
+import Ticket from "../../components/Ticket";
 
 import { i18n } from "../../translate/i18n";
 
@@ -13,7 +13,8 @@ const useStyles = makeStyles(theme => ({
 	chatContainer: {
 		flex: 1,
 		// backgroundColor: "#eee",
-		padding: theme.spacing(4),
+		// padding: theme.spacing(4),
+		padding: theme.padding,
 		height: `calc(100% - 48px)`,
 		overflowY: "hidden",
 	},
@@ -36,12 +37,17 @@ const useStyles = makeStyles(theme => ({
 		flexDirection: "column",
 	},
 	welcomeMsg: {
-		backgroundColor: "#eee",
+		// backgroundColor: "#eee",
+		background: theme.palette.tabHeaderBackground,
 		display: "flex",
 		justifyContent: "space-evenly",
 		alignItems: "center",
 		height: "100%",
 		textAlign: "center",
+	},
+	logo: {
+		logo: theme.logo,
+		content: "url(" + ((theme.appLogoLight || theme.appLogoDark) ? getBackendUrl() + "/public/" + (theme.mode === "light" ? theme.appLogoLight || theme.appLogoDark : theme.appLogoDark || theme.appLogoLight) : (theme.mode === "light" ? logo : logoDark)) + ")"
 	},
 }));
 
@@ -63,7 +69,12 @@ const Chat = () => {
 							</>
 						) : (
 							<Paper square variant="outlined" className={classes.welcomeMsg}>
-								<span>{i18n.t("chat.noTicketMessage")}</span>
+								<span>
+									<center>
+										<img className={classes.logo} width="50%" alt="" />
+									</center>
+									{i18n.t("chat.noTicketMessage")}
+								</span>
 							</Paper>
 						)}
 					</Grid>

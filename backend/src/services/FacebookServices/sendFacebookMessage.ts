@@ -10,21 +10,24 @@ interface Request {
   quotedMsg?: Message;
 }
 
-const SendWhatsAppMessage = async ({ body, ticket }: Request): Promise<any> => {
+const sendFacebookMessage = async ({ body, ticket, quotedMsg }: Request): Promise<any> => {
   const { number } = ticket.contact;
   try {
-    await sendText(
+
+    const send = await sendText(
       number,
-      formatBody(body, ticket.contact),
+      formatBody(body, ticket),
       ticket.whatsapp.facebookUserToken
     );
 
     await ticket.update({ lastMessage: body });
-    
+
+    return send;
+
   } catch (err) {
-    console.log(err);
+    console.log(err)
     throw new AppError("ERR_SENDING_FACEBOOK_MSG");
   }
 };
 
-export default SendWhatsAppMessage;
+export default sendFacebookMessage;

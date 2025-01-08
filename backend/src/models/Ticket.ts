@@ -11,7 +11,9 @@ import {
   AutoIncrement,
   Default,
   BeforeCreate,
-  BelongsToMany
+  BelongsToMany,
+  AllowNull,
+  DataType
 } from "sequelize-typescript";
 import { v4 as uuidv4 } from "uuid";
 
@@ -21,9 +23,11 @@ import Queue from "./Queue";
 import User from "./User";
 import Whatsapp from "./Whatsapp";
 import Company from "./Company";
-import QueueOption from "./QueueOption";
 import Tag from "./Tag";
 import TicketTag from "./TicketTag";
+import QueueIntegrations from "./QueueIntegrations";
+import { format } from "date-fns";
+
 
 @Table
 class Ticket extends Model<Ticket> {
@@ -35,11 +39,23 @@ class Ticket extends Model<Ticket> {
   @Column({ defaultValue: "pending" })
   status: string;
 
-  @Column({ defaultValue: "whatsapp" })
-  channel: string;
-
   @Column
   unreadMessages: number;
+
+  @Column
+  flowWebhook: boolean;
+
+  @Column
+  lastFlowId: string;
+
+  @Column
+  hashFlowId: string;
+
+  @Column
+  flowStopped: string;
+
+  @Column(DataType.JSON)
+  dataWebhook: {} | null;;
 
   @Column
   lastMessage: string;
@@ -48,7 +64,7 @@ class Ticket extends Model<Ticket> {
   @Column
   isGroup: boolean;
 
-  @CreatedAt
+  @Column
   createdAt: Date;
 
   @UpdatedAt
@@ -71,7 +87,6 @@ class Ticket extends Model<Ticket> {
   @ForeignKey(() => Whatsapp)
   @Column
   whatsappId: number;
-  
 
   @BelongsTo(() => Whatsapp)
   whatsapp: Whatsapp;
@@ -83,15 +98,9 @@ class Ticket extends Model<Ticket> {
   @BelongsTo(() => Queue)
   queue: Queue;
 
+  @Default(false)
   @Column
-  chatbot: boolean;
-
-  @ForeignKey(() => QueueOption)
-  @Column
-  queueOptionId: number;
-
-  @BelongsTo(() => QueueOption)
-  queueOption: QueueOption;
+  isBot: boolean;
 
   @HasMany(() => Message)
   messages: Message[];
@@ -113,10 +122,69 @@ class Ticket extends Model<Ticket> {
   @Column
   uuid: string;
 
+  @Default("whatsapp")
+  @Column
+  channel: string;
+
+  @AllowNull(false)
+  @Default(0)
+  @Column
+  amountUsedBotQueues: number;
+
+  @AllowNull(false)
+  @Default(0)
+  @Column
+  amountUsedBotQueuesNPS: number;
+
   @BeforeCreate
   static setUUID(ticket: Ticket) {
     ticket.uuid = uuidv4();
   }
+
+  @Default(false)
+  @Column
+  fromMe: boolean;
+
+  @Default(false)
+  @Column
+  sendInactiveMessage: boolean;
+
+  @Column
+  lgpdSendMessageAt: Date;
+
+  @Column
+  lgpdAcceptedAt: Date;
+
+  @Column
+  imported: Date;
+
+  @Default(false)
+  @Column
+  isOutOfHour: boolean;
+
+  @Default(false)
+  @Column
+  useIntegration: boolean;
+
+  @ForeignKey(() => QueueIntegrations)
+  @Column
+  integrationId: number;
+
+  @BelongsTo(() => QueueIntegrations)
+  queueIntegration: QueueIntegrations;
+
+  @Column
+  isActiveDemand: boolean;
+
+  @Column
+  typebotSessionId: string;
+
+  @Default(false)
+  @Column
+  typebotStatus: boolean
+
+  @Column
+  typebotSessionTime: Date
 }
 
 export default Ticket;

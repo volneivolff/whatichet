@@ -1,12 +1,16 @@
-import { proto, WALegacySocket, WASocket } from "@adiwajshing/baileys";
+import { proto, WASocket } from "@whiskeysockets/baileys";
 import AppError from "../../errors/AppError";
 import GetTicketWbot from "../../helpers/GetTicketWbot";
 import GetWbotMessage from "../../helpers/GetWbotMessage";
 import Message from "../../models/Message";
 import Ticket from "../../models/Ticket";
 
-const DeleteWhatsAppMessage = async (messageId: string): Promise<Message> => {
-  const message = await Message.findByPk(messageId, {
+const DeleteWhatsAppMessage = async (messageId: string, companyId?: string | number): Promise<Message> => {
+  const message = await Message.findOne({
+    where: {
+      id: messageId,
+      companyId
+    },
     include: [
       {
         model: Ticket,
@@ -22,37 +26,30 @@ const DeleteWhatsAppMessage = async (messageId: string): Promise<Message> => {
 
   const { ticket } = message;
 
-  const messageToDelete = await GetWbotMessage(ticket, messageId);
+  if (!message.isPrivate) {
+    const messageToDelete = await GetWbotMessage(ticket, messageId);
 
-  try {
-    const wbot = await GetTicketWbot(ticket);
-    const messageDelete = messageToDelete as proto.WebMessageInfo;
-
-    if (wbot.type === "legacy") {
-      const remoteJid = messageDelete.key.remoteJid as string;
-      await (wbot as WALegacySocket).sendMessage(remoteJid, {
-        delete: messageDelete.key
-      });
-    }
-
-    if (wbot.type === "md") {
+    // ALTERAÇÃO PARA BAILEYS 5.0
+    try {
+      const wbot = await GetTicketWbot(ticket);
       const menssageDelete = messageToDelete as Message;
 
-      await (wbot as WASocket).sendMessage(menssageDelete.remoteJid, {
-        delete: {
-          id: menssageDelete.id,
-          remoteJid: menssageDelete.remoteJid,
-          participant: menssageDelete.participant,
-          fromMe: menssageDelete.fromMe
-        }
-      });
-    }
-  } catch (err) {
-    console.log(err);
-    throw new AppError("ERR_DELETE_WAPP_MSG");
-  }
-  await message.update({ isDeleted: true });
+      const jsonStringToParse = JSON.parse(menssageDelete.dataJson)
 
+      await (wbot as WASocket).sendMessage(menssageDelete.remoteJid, {
+        delete: jsonStringToParse.key
+      })
+
+    } catch (err) {
+      console.log(err);
+      throw new AppError("ERR_DELETE_WAPP_MSG");
+    }
+  }
+
+  if (!message.isPrivate) {
+    await message.update({ isDeleted: true });
+  }
+  
   return message;
 };
 
